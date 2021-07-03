@@ -1,6 +1,6 @@
 import { JWKInterface } from "arweave/node/lib/wallet";
 import React, { useState } from "react";
-
+import styles from './styles.module.scss';
 import arweave from "../../config/arweave";
 import { useDispatch } from "../../context";
 import { actionsCreator } from "../../context/user/actions";
@@ -37,11 +37,12 @@ function KeyFile({ className }: IKeyFile) {
   };
 
   return (
-    <div className={className}>
+    <div className={`${className} ${styles.container}`}>
       <input type="file" onChange={handleOnChange} />
       <button
         type="button"
         onClick={handleSaveFile}
+        className={styles.save}
       >
         Save
       </button>

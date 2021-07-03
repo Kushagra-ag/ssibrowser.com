@@ -18,10 +18,12 @@ function SearchBar() {
   const [register, setRegister] = useState('')
   const [error, setError] = useState('');
   const [did, setDid] = useState(empty_doc);
+  const [loading, setLoading] = useState(false);
 
-  const handleOnKeyPress = ({ key }: React.KeyboardEvent<HTMLInputElement>) => {
-    if (key === 'Enter') {
-      // @TODO: Handle other domains
+  const spinner = <i className="fa fa-lg fa-spin fa-circle-notch" aria-hidden="true"></i>;
+
+  const getResults = () => {
+    // @TODO: Handle other domains
       switch (domain) {
         case DOMAINS.TYRON:
           if (VALID_SMART_CONTRACTS.includes(name))
@@ -35,9 +37,11 @@ function SearchBar() {
         case DOMAINS.COOP:
           {
             (async () => {
+              setLoading(true);
               await fetchAddr({ username: name, domain })
               .then( async addr => {
                 const did_doc = await resolve({ addr });
+                setLoading(false);
                 setDid(did_doc);
               }).catch( () => setRegister('coop'))
             })();
@@ -46,12 +50,18 @@ function SearchBar() {
         default:
           setError('Invalid domain');
       }
+  }
+
+  const handleOnKeyPress = ({ key }: React.KeyboardEvent<HTMLInputElement>) => {
+    if (key === 'Enter') {
+      getResults();
     }
   };
 
   const handleSearchBar = ({
     currentTarget: { value }
   }: React.ChangeEvent<HTMLInputElement>) => {
+    setError('');
     setDid(empty_doc);
     setRegister('');
     setValue(value);
@@ -59,20 +69,32 @@ function SearchBar() {
       const [name = '', domain = ''] = value.split('.');
       setName(name);
       setDomain(domain);
-    } else {
-      setError('');
     }
   };
 
   return (
     <div className={styles.container}>
-      <input
-        type='text'
-        className={styles.searchBar}
-        onKeyPress={handleOnKeyPress}
-        onChange={handleSearchBar}
-        value={value}
-      />
+      <label htmlFor="">Enter Username</label>
+      <div className={styles.searchDiv}>
+        <input
+          type='text'
+          className={styles.searchBar}
+          onKeyPress={handleOnKeyPress}
+          onChange={handleSearchBar}
+          value={value}
+          placeholder="Example - tyron.did"
+          autoFocus
+        />
+        <div>
+          <button onClick={getResults} className={styles.searchBtn}>
+            
+              {
+                loading ? spinner : <i className="fa fa-search"></i>
+              }
+            
+          </button>
+        </div>
+      </div>
       <p className={styles.errorMsg}>{error}</p>
       {register === 'coop' &&
         <>
@@ -84,8 +106,8 @@ function SearchBar() {
           <div>
             { did.map((res: any) => {
               return(
-                <div key={res} className={styles.did}>
-                  <p className={styles.did}>{res[0]}</p>
+                <div key={res} className={styles.docInfo}>
+                  <h3 className={styles.blockHead}>{res[0]}</h3>
                   { res[1].map((element: any) => {
                       return(
                         <p key={element}className={styles.did}>{element}</p>
